@@ -9,6 +9,14 @@ module.exports = (oldFile, newFile, patchFile) => {
   if (patchFile === undefined) patchFile = "patch.bin";
 
   // open files
+  if (!fs.existsSync(oldFile)) {
+    log.error(`File not found: ${oldFile}`);
+    return false;
+  }
+  if (!fs.existsSync(newFile)) {
+    log.error(`File not found: ${newFile}`);
+    return false;
+  }
   const fOld = fs.readFileSync(oldFile);
   const fNew = fs.readFileSync(newFile);
 
