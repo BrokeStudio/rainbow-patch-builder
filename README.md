@@ -1,6 +1,6 @@
 # RAINBOW PATCH TOOL
 
-This tool creates a patch file, between two NES ROMs, to be used with the Rainbow bootloader.
+This tool creates a patch file, between two NES ROMs, to be used with the Rainbow bootloader (or with your own code).
 
 ## HOW TO INSTALL
 
@@ -28,26 +28,28 @@ A patch file consists of the following sections, in order:
   
 (*sector header* and *sector data* can be repeated)
 
-## HEADER FORMAT
+### Header format
 
 The format of the header is as follows:  
 
 - 0-4: constant $52 $4E $42 $57 $1A ("RNBW" followed by MS-DOS end-of-file)
 - 5: number of sectors to update
-- 6-15: unused padding (should be filled with zero)
+- 6: number of PRG sectors to update
+- 7: number of CHR sectors to update
+- 8-15: unused padding (should be filled with zero)
 
-### SECTOR PATCH HEADER
+### Sector header
 
 The format of the sector header is as follows:
 
 - 0: PRG-ROM (0) or CHR-ROM (1) flag
-- 1: 8K bank index (0-63)
+- 1: 16K bank index (0-31)
 - 2: sector index (0-3)
 - 3-15: unused padding (should be filled with zero)
 
 ### Sector data
 
-Raw data to be used to update the cartridge memory.
+Raw data (4096 bytes) to be used to update the cartridge memory.
 
 ## CONTACT
 
