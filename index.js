@@ -6,11 +6,11 @@ const pkg = require("./package.json");
 
 const patch = require("./patch");
 
-program.version(pkg.version, "-v, --version");
+program.name("rainbow").version(pkg.version, "-v, --version");
 
 program
   .command("patch")
-  .description(`Build "compile.bat" batch file`)
+  .description(`Compare old and new ROM and create a patch file`)
   .arguments("[oldFile] [newFile] [patchFile]")
   .action(function(oldFile, newFile, patchFile) {
     if (oldFile === undefined) {
@@ -27,13 +27,14 @@ program
 
 program.parse(process.argv);
 
+log.info(`Run "rainbow --help" for help.`);
 /*
 if (typeof program.args[0] === "string") {
   // log
   log.error("Unknown command: " + program.args[0]);
-  log.info(`Run "build --help" for help.`);
+  log.info(`Run "rainbow --help" for help.`);
 } else {
   // default behavior
-  compile({});
+  //compile({});
 }
 */
