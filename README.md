@@ -43,8 +43,8 @@ The format of the header is as follows:
 The format of the sector header is as follows:
 
 - 0: PRG-ROM (0) or CHR-ROM (1) flag
-- 1: 16K bank index (0-31)
-- 2: sector index (0-3)
+- 1: 8K bank index (0-63)
+- 2: sector index (0-1)
 - 3-15: unused padding (should be filled with zero)
 
 ### Sector data
