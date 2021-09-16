@@ -111,7 +111,7 @@ module.exports = (oldFile, newFile, patchFile) => {
           fPatch,
           new Uint8Array([
             0, // PRG-ROM flag
-            Math.round(sector / 2), // 8k bank index (0-63)
+            Math.floor(sector / 2), // 8k bank index (0-63)
             sector % 2, // sector index (0-1)
             0,
             0,
@@ -143,7 +143,7 @@ module.exports = (oldFile, newFile, patchFile) => {
   }
 
   // loop through CHR sectors
-  offset = 16 + PRG_ROM_SIZE;
+  offset = 16 + CHR_ROM_SIZE;
   for (let sector = 0; sector < CHR_SECTORS; sector++) {
     log.print(`Checking CHR-ROM sector ${sector} / ${CHR_SECTORS - 1}...`);
     let start = sector * 4 * 1024;
@@ -157,8 +157,8 @@ module.exports = (oldFile, newFile, patchFile) => {
           fPatch,
           new Uint8Array([
             1, // CHR-ROM flag
-            Math.round(sector / 2), // 8k bank index (0-63)
-            sector % 2, // sector index (0-1)
+            sector, // 4K bank index (0-127)
+            0,
             0,
             0,
             0,
@@ -190,11 +190,12 @@ module.exports = (oldFile, newFile, patchFile) => {
 
   // update header with sector details
   const sectorDetails = new Uint8Array([
-    PRGsectorsToUpdate + CHRsectorsToUpdate,
+    ( (PRGsectorsToUpdate + CHRsectorsToUpdate) >> 8 ) & 0xff,
+    (PRGsectorsToUpdate + CHRsectorsToUpdate) & 0xff,
     PRGsectorsToUpdate,
     CHRsectorsToUpdate,
   ]);
-  fs.writeSync(fPatch, sectorDetails, 0, 3, 5);
+  fs.writeSync(fPatch, sectorDetails, 0, 4, 5);
 
   // close patch file
   fs.closeSync(fPatch);
