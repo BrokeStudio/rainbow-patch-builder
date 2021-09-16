@@ -38,14 +38,22 @@ The format of the header is as follows:
 - 7: number of CHR sectors to update
 - 8-15: unused padding (should be filled with zero)
 
-### Sector header
+### PRG sector header
 
-The format of the sector header is as follows:
+The format of the PRG sector header is as follows:
 
-- 0: PRG-ROM (0) or CHR-ROM (1) flag
-- 1: 16K bank index (0-31)
-- 2: sector index (0-3)
+- 0: PRG-ROM (0) flag
+- 1: 8K bank index (0-63)
+- 2: sector index (0-1)
 - 3-15: unused padding (should be filled with zero)
+
+### CHR sector header
+
+The format of the CHR sector header is as follows:
+
+- 0: CHR-ROM (1) flag
+- 1: 4K bank index (0-127)
+- 2-15: unused padding (should be filled with zero)
 
 ### Sector data
 

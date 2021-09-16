@@ -78,7 +78,7 @@ module.exports = (oldFile, newFile, patchFile) => {
       0,
       0,
       0,
-      0
+      0,
     ])
   );
 
@@ -93,24 +93,26 @@ module.exports = (oldFile, newFile, patchFile) => {
   log.info("");
 
   // init vars
-  let offset = 16;
   let PRGsectorsToUpdate = 0;
   let CHRsectorsToUpdate = 0;
 
-  // loop throught PRG sectors
+  // loop through PRG sectors
+  let offset = 16;
   for (let sector = 0; sector < PRG_SECTORS; sector++) {
     log.print(`Checking PRG-ROM sector ${sector} / ${PRG_SECTORS - 1}...`);
     let start = sector * 4 * 1024;
     for (let byte = 0; byte < 4 * 1024; byte++) {
       if (fOld[start + byte + offset] !== fNew[start + byte + offset]) {
+        // log
+        log.warning(`PRG sector ${sector} is different...`);
+
         // append patch header
         fs.writeSync(
           fPatch,
           new Uint8Array([
             0, // PRG-ROM flag
-            //Math.round(sector / 4), // 8k bank index
-            Math.round(sector / 8), // let's use 16k bank index for now since we're still working with a UNROM-512-like mapper
-            sector % 4, // sector index
+            Math.floor(sector / 2), // 8k bank index (0-63)
+            sector % 2, // sector index (0-1)
             0,
             0,
             0,
@@ -123,7 +125,7 @@ module.exports = (oldFile, newFile, patchFile) => {
             0,
             0,
             0,
-            0
+            0,
           ])
         );
 
@@ -132,9 +134,6 @@ module.exports = (oldFile, newFile, patchFile) => {
           fPatch,
           fNew.slice(start + offset, start + offset + 4 * 1024)
         );
-
-        // log
-        log.warning(`PRG sector ${sector} is different...`);
 
         // move to next sector
         PRGsectorsToUpdate++;
@@ -143,21 +142,22 @@ module.exports = (oldFile, newFile, patchFile) => {
     }
   }
 
-  // loop throught CHR sectors
-  offset = 16 + PRG_ROM_SIZE;
+  // loop through CHR sectors
+  offset = 16 + CHR_ROM_SIZE;
   for (let sector = 0; sector < CHR_SECTORS; sector++) {
     log.print(`Checking CHR-ROM sector ${sector} / ${CHR_SECTORS - 1}...`);
     let start = sector * 4 * 1024;
     for (let byte = 0; byte < 4 * 1024; byte++) {
       if (fOld[start + byte + offset] !== fNew[start + byte + offset]) {
+        // log
+        log.warning(`CHR sector ${sector} is different...`);
+
         // append patch header
         fs.writeSync(
           fPatch,
           new Uint8Array([
             1, // CHR-ROM flag
-            //Math.round(sector / 4), // 8k bank index
-            Math.round(sector / 8), // let's use 16k bank index for now since we're still working with a UNROM-512-like mapper
-            sector % 4, // sector index
+            sector, // 4K bank index (0-127)
             0,
             0,
             0,
@@ -170,7 +170,8 @@ module.exports = (oldFile, newFile, patchFile) => {
             0,
             0,
             0,
-            0
+            0,
+            0,
           ])
         );
 
@@ -179,9 +180,6 @@ module.exports = (oldFile, newFile, patchFile) => {
           fPatch,
           fNew.slice(start + offset, start + offset + 4 * 1024)
         );
-
-        // log
-        log.warning(`CHR sector ${sector} is different...`);
 
         // move to next sector
         CHRsectorsToUpdate++;
@@ -192,11 +190,12 @@ module.exports = (oldFile, newFile, patchFile) => {
 
   // update header with sector details
   const sectorDetails = new Uint8Array([
-    PRGsectorsToUpdate + CHRsectorsToUpdate,
+    ( (PRGsectorsToUpdate + CHRsectorsToUpdate) >> 8 ) & 0xff,
+    (PRGsectorsToUpdate + CHRsectorsToUpdate) & 0xff,
     PRGsectorsToUpdate,
-    CHRsectorsToUpdate
+    CHRsectorsToUpdate,
   ]);
-  fs.writeSync(fPatch, sectorDetails, 0, 3, 5);
+  fs.writeSync(fPatch, sectorDetails, 0, 4, 5);
 
   // close patch file
   fs.closeSync(fPatch);
