@@ -1,19 +1,19 @@
 const chalk = require("chalk");
 
 module.exports = {
-  warning: msg => {
+  warning: (msg) => {
     console.log(chalk.yellow(msg));
   },
 
-  error: msg => {
+  error: (msg) => {
     console.log(chalk.red(msg));
   },
 
-  info: msg => {
+  info: (msg) => {
     console.log(chalk.cyan(msg));
   },
 
-  print: msg => {
+  print: (msg) => {
     console.log(msg);
-  }
+  },
 };

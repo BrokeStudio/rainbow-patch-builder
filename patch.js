@@ -1,4 +1,3 @@
-//const glob = require("glob");
 const path = require("path");
 const fs = require("fs");
 
@@ -68,7 +67,7 @@ module.exports = (oldFile, newFile, patchFile) => {
       "B".charCodeAt(),
       "W".charCodeAt(),
       0x1a,
-      0,
+      0, // file version
       0,
       0,
       0,
@@ -85,8 +84,8 @@ module.exports = (oldFile, newFile, patchFile) => {
   // compare files and build patch file
   const PRG_ROM_SIZE = fNew[4] * 16 * 1024;
   const CHR_ROM_SIZE = fNew[5] * 8 * 1024;
-  const PRG_SECTORS = PRG_ROM_SIZE / (4 * 1024);
-  const CHR_SECTORS = CHR_ROM_SIZE / (4 * 1024);
+  const PRG_SECTORS = PRG_ROM_SIZE / (64 * 1024);
+  const CHR_SECTORS = CHR_ROM_SIZE / (64 * 1024);
 
   log.info(`PRG_SECTORS: ${PRG_SECTORS}`);
   log.info(`CHR_SECTORS: ${CHR_SECTORS}`);
@@ -100,8 +99,8 @@ module.exports = (oldFile, newFile, patchFile) => {
   let offset = 16;
   for (let sector = 0; sector < PRG_SECTORS; sector++) {
     log.print(`Checking PRG-ROM sector ${sector} / ${PRG_SECTORS - 1}...`);
-    let start = sector * 4 * 1024;
-    for (let byte = 0; byte < 4 * 1024; byte++) {
+    let start = sector * 64 * 1024;
+    for (let byte = 0; byte < 64 * 1024; byte++) {
       if (fOld[start + byte + offset] !== fNew[start + byte + offset]) {
         // log
         log.warning(`PRG sector ${sector} is different...`);
@@ -132,7 +131,7 @@ module.exports = (oldFile, newFile, patchFile) => {
         // add patch data
         fs.writeSync(
           fPatch,
-          fNew.slice(start + offset, start + offset + 4 * 1024)
+          fNew.subarray(start + offset, start + offset + 64 * 1024)
         );
 
         // move to next sector
@@ -146,8 +145,8 @@ module.exports = (oldFile, newFile, patchFile) => {
   offset = 16 + CHR_ROM_SIZE;
   for (let sector = 0; sector < CHR_SECTORS; sector++) {
     log.print(`Checking CHR-ROM sector ${sector} / ${CHR_SECTORS - 1}...`);
-    let start = sector * 4 * 1024;
-    for (let byte = 0; byte < 4 * 1024; byte++) {
+    let start = sector * 64 * 1024;
+    for (let byte = 0; byte < 64 * 1024; byte++) {
       if (fOld[start + byte + offset] !== fNew[start + byte + offset]) {
         // log
         log.warning(`CHR sector ${sector} is different...`);
@@ -178,7 +177,7 @@ module.exports = (oldFile, newFile, patchFile) => {
         // add patch data
         fs.writeSync(
           fPatch,
-          fNew.slice(start + offset, start + offset + 4 * 1024)
+          fNew.subarray(start + offset, start + offset + 64 * 1024)
         );
 
         // move to next sector
@@ -190,12 +189,12 @@ module.exports = (oldFile, newFile, patchFile) => {
 
   // update header with sector details
   const sectorDetails = new Uint8Array([
-    ( (PRGsectorsToUpdate + CHRsectorsToUpdate) >> 8 ) & 0xff,
+    ((PRGsectorsToUpdate + CHRsectorsToUpdate) >> 8) & 0xff,
     (PRGsectorsToUpdate + CHRsectorsToUpdate) & 0xff,
     PRGsectorsToUpdate,
     CHRsectorsToUpdate,
   ]);
-  fs.writeSync(fPatch, sectorDetails, 0, 4, 5);
+  fs.writeSync(fPatch, sectorDetails, 0, 4, 6);
 
   // close patch file
   fs.closeSync(fPatch);

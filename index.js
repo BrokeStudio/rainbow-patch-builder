@@ -12,7 +12,7 @@ program
   .command("patch")
   .description(`Compare old and new ROM and create a patch file`)
   .arguments("[oldFile] [newFile] [patchFile]")
-  .action(function(oldFile, newFile, patchFile) {
+  .action(function (oldFile, newFile, patchFile) {
     if (oldFile === undefined) {
       log.error("old file path is missing...");
       process.exit(0);
@@ -28,13 +28,3 @@ program
 program.parse(process.argv);
 
 log.info(`Run "rainbow --help" for help.`);
-/*
-if (typeof program.args[0] === "string") {
-  // log
-  log.error("Unknown command: " + program.args[0]);
-  log.info(`Run "rainbow --help" for help.`);
-} else {
-  // default behavior
-  //compile({});
-}
-*/
